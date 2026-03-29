@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quizz_app/data/questions.dart';
 import 'package:quizz_app/questions_screen.dart';
 import 'package:quizz_app/widgets/home_screen.dart';
+import 'package:quizz_app/results_screen.dart';
 
 const Alignment gradientStart = Alignment.topLeft;
 const Alignment gradientEnd = Alignment.bottomRight;
@@ -14,22 +16,41 @@ class Quiz extends StatefulWidget {
 }
 
 class _QuizState extends State<Quiz> {
-  late Widget activeScreen;
+  String activeScreen = 'home-screen';
+
+  List<String> selectedAnswers = [];
 
   void switchScreen() {
     setState(() {
-      activeScreen = const QuestionsScreen();
+      activeScreen = 'questions-screen';
     });
+  }
+
+  void chooseAnswer(String answer) {
+    selectedAnswers.add(answer);
+
+    if (selectedAnswers.length == questions.length) {
+      setState(() {
+        activeScreen = 'results-screen';
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    activeScreen = HomeScreen(switchScreen);
+    activeScreen = 'home-screen';
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget screen = switch (activeScreen) {
+      'home-screen' => HomeScreen(switchScreen),
+      'questions-screen' => QuestionsScreen(onSelectAnswer: chooseAnswer),
+      'results-screen' => ResultsScreen(chosenAnswers: selectedAnswers),
+      _ => HomeScreen(switchScreen),
+    };
+
     return MaterialApp(
       title: 'Quizz App',
       home: Scaffold(
@@ -41,7 +62,7 @@ class _QuizState extends State<Quiz> {
               end: gradientEnd,
             ),
           ),
-          child: activeScreen,
+          child: screen,
         ),
       ),
     );
